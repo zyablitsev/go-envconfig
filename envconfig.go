@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"time"
 )
 
 // ReadEnv get a config struct ptr
@@ -44,7 +45,12 @@ func handleStruct(v reflect.Value, f func(reflect.StructField, reflect.Value)) e
 	return nil
 }
 
-func handleValue(fieldType reflect.Type, fieldValue reflect.Value, setValue string) {
+func handleValue(
+	fieldType reflect.Type,
+	fieldTag reflect.StructTag,
+	fieldValue reflect.Value,
+	setValue string,
+) {
 	switch fieldType.Kind() {
 	case reflect.Bool:
 		if v, err := strconv.ParseBool(setValue); err == nil {
@@ -90,7 +96,11 @@ func handleValue(fieldType reflect.Type, fieldValue reflect.Value, setValue stri
 		}
 	case reflect.Int64:
 		if v, err := strconv.ParseInt(setValue, 10, 64); err == nil {
-			fieldValue.SetInt(v)
+			if _, ok := fieldValue.Interface().(time.Duration); ok {
+				handleTimeDuration(fieldTag.Get("unit"), fieldValue, v)
+			} else {
+				fieldValue.SetInt(v)
+			}
 		}
 	case reflect.Float32:
 		if v, err := strconv.ParseFloat(setValue, 32); err == nil {
@@ -123,5 +133,22 @@ func handleField(structField reflect.StructField, structValue reflect.Value) {
 	if envVal != "" {
 		setValue = envVal
 	}
-	handleValue(structField.Type, structValue, setValue)
+	handleValue(structField.Type, structField.Tag, structValue, setValue)
+}
+
+func handleTimeDuration(unit string, fieldValue reflect.Value, v int64) {
+	switch unit {
+	case "microsecond":
+		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Microsecond))
+	case "millisecond":
+		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Millisecond))
+	case "second":
+		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Second))
+	case "minute":
+		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Minute))
+	case "hour":
+		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Hour))
+	default: // "nanosecond"
+		fieldValue.Set(reflect.ValueOf(time.Duration(v)))
+	}
 }
