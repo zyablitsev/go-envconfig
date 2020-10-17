@@ -1,6 +1,7 @@
 package envconfig
 
 import (
+	"net"
 	"reflect"
 	"strconv"
 	"strings"
@@ -235,6 +236,16 @@ func handleSlice(fieldType reflect.Type, fieldValue reflect.Value, setValue stri
 			if v, err := strconv.ParseFloat(i, 64); err == nil {
 				slicePtr.Elem().Set(reflect.Append(slicePtr.Elem(), reflect.ValueOf(float64(v))))
 			}
+		}
+		fieldValue.Set(slicePtr.Elem())
+	case net.IP:
+		fieldValue.Set(reflect.ValueOf(net.ParseIP(setValue).To4()))
+	case []net.IP:
+		slice := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf((net.IP)(nil))), 0, len(elems))
+		slicePtr = reflect.New(slice.Type())
+		slicePtr.Elem().Set(slice)
+		for _, v := range elems {
+			slicePtr.Elem().Set(reflect.Append(slicePtr.Elem(), reflect.ValueOf(net.ParseIP(v).To4())))
 		}
 		fieldValue.Set(slicePtr.Elem())
 	}
