@@ -95,12 +95,16 @@ func handleValue(
 			fieldValue.SetInt(v)
 		}
 	case reflect.Int64:
-		if v, err := strconv.ParseInt(setValue, 10, 64); err == nil {
-			if _, ok := fieldValue.Interface().(time.Duration); ok {
-				handleTimeDuration(fieldTag.Get("unit"), fieldValue, v)
-			} else {
-				fieldValue.SetInt(v)
+		if _, ok := fieldValue.Interface().(time.Duration); ok {
+			d, err := time.ParseDuration(setValue)
+			if err == nil {
+				fieldValue.Set(reflect.ValueOf(d))
 			}
+			return
+		}
+
+		if v, err := strconv.ParseInt(setValue, 10, 64); err == nil {
+			fieldValue.SetInt(v)
 		}
 	case reflect.Float32:
 		if v, err := strconv.ParseFloat(setValue, 32); err == nil {
@@ -134,21 +138,4 @@ func handleField(structField reflect.StructField, structValue reflect.Value) {
 		setValue = envVal
 	}
 	handleValue(structField.Type, structField.Tag, structValue, setValue)
-}
-
-func handleTimeDuration(unit string, fieldValue reflect.Value, v int64) {
-	switch unit {
-	case "microsecond":
-		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Microsecond))
-	case "millisecond":
-		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Millisecond))
-	case "second":
-		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Second))
-	case "minute":
-		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Minute))
-	case "hour":
-		fieldValue.Set(reflect.ValueOf(time.Duration(v) * time.Hour))
-	default: // "nanosecond"
-		fieldValue.Set(reflect.ValueOf(time.Duration(v)))
-	}
 }

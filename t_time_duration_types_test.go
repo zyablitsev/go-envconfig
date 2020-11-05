@@ -54,12 +54,12 @@ func TestTimeDurationTypesDefaults(t *testing.T) {
 func TestTimeDurationTypes(t *testing.T) {
 	os.Clearenv()
 	envs := envValues{
-		"ENV_NANOSECOND":  envValue{checkValue: 2},
-		"ENV_MICROSECOND": envValue{checkValue: 2},
-		"ENV_MILLISECOND": envValue{checkValue: 2},
-		"ENV_SECOND":      envValue{checkValue: 2},
-		"ENV_MINUTE":      envValue{checkValue: 2},
-		"ENV_HOUR":        envValue{checkValue: 2},
+		"ENV_NANOSECOND":  envValue{checkValue: "2ns"},
+		"ENV_MICROSECOND": envValue{checkValue: "2us"},
+		"ENV_MILLISECOND": envValue{checkValue: "2ms"},
+		"ENV_SECOND":      envValue{checkValue: "2s"},
+		"ENV_MINUTE":      envValue{checkValue: "2m"},
+		"ENV_HOUR":        envValue{checkValue: "2h"},
 	}
 	if err := envs.set(); err != nil {
 		t.Fatalf("envs.set() fail, raw: %v", err)
@@ -111,10 +111,10 @@ func TestTimeDurationTypes(t *testing.T) {
 // that holds parameters of different time.Duration unit types
 type timeDurationTypes struct {
 	// time.Duration types
-	NanosecondVal  time.Duration `env:"ENV_NANOSECOND" default:"1" unit:"nanosecond"`
-	MicrosecondVal time.Duration `env:"ENV_MICROSECOND" default:"1" unit:"microsecond"`
-	MillisecondVal time.Duration `env:"ENV_MILLISECOND" default:"1" unit:"millisecond"`
-	SecondVal      time.Duration `env:"ENV_SECOND" default:"1" unit:"second"`
-	MinuteVal      time.Duration `env:"ENV_MINUTE" default:"1" unit:"minute"`
-	HourVal        time.Duration `env:"ENV_HOUR" default:"1" unit:"hour"`
+	NanosecondVal  time.Duration `env:"ENV_NANOSECOND" default:"1ns"`
+	MicrosecondVal time.Duration `env:"ENV_MICROSECOND" default:"1us"`
+	MillisecondVal time.Duration `env:"ENV_MILLISECOND" default:"1ms"`
+	SecondVal      time.Duration `env:"ENV_SECOND" default:"1s"`
+	MinuteVal      time.Duration `env:"ENV_MINUTE" default:"1m"`
+	HourVal        time.Duration `env:"ENV_HOUR" default:"1h"`
 }
